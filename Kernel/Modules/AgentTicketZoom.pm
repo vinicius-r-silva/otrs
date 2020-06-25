@@ -1713,6 +1713,27 @@ sub MaskAgentZoom {
             };
         }
     }
+    
+    my $mine_setor = "-";
+    #Pega o primeiro grupo:
+    my @mine_array = (sort keys %{ $Self->{DisplaySettings}->{ProcessWidgetDynamicFieldGroups} });
+    my $mine_firstG = $mine_array[0];   
+
+    #verifica se o primeiro grupo ta correto
+    my $mine_default_firstG = "000 - nao mexer - vars";
+    # if ( grep { $_ eq $mine_firstG } $mine_default_firstG ) {
+    if ($mine_firstG =~ /\Q$mine_default_firstG\E/){
+        #Pega o campo dinamico do grupo:
+        my $mine_firstF = $Self->{DisplaySettings}->{ProcessWidgetDynamicFieldGroups}->{$mine_firstG};
+        $mine_firstF =~ s{\s}{}xmsg; 
+
+        for my $mine_Field (@FieldsWidget) {
+            # $mine_setor .= $mine_Field->{Label};
+            if ( grep { $_ eq $mine_Field->{Label} } $mine_firstF ) {
+                $mine_setor = $mine_Field->{Value};
+            }
+        }
+    }
 
     if ($IsProcessTicket) {
 
@@ -1722,7 +1743,6 @@ sub MaskAgentZoom {
             sort keys %{ $Self->{DisplaySettings}->{ProcessWidgetDynamicFieldGroups} }
             )
         {
-
             $LayoutObject->Block(
                 Name => 'ProcessWidgetDynamicFieldGroups',
             );
@@ -1738,54 +1758,61 @@ sub MaskAgentZoom {
                 for my $Field (@FieldsWidget) {
 
                     if ( grep { $_ eq $Field->{Name} } @GroupFields ) {
+                        if ($GroupName =~ /\Q$mine_setor\E/){
+                        # if(grep { $_ eq $GroupName } $mine_setor){
 
-                        $ShowGroupTitle = 1;
-                        $LayoutObject->Block(
-                            Name => 'ProcessWidgetDynamicField',
-                            Data => {
-                                Label => $Field->{Label},
-                                Name  => $Field->{Name},
-                            },
-                        );
-
-                        $LayoutObject->Block(
-                            Name => 'ProcessWidgetDynamicFieldValueOverlayTrigger',
-                        );
-
-                        if ( $Field->{Link} ) {
+                            $ShowGroupTitle = 1;
                             $LayoutObject->Block(
-                                Name => 'ProcessWidgetDynamicFieldLink',
+                                Name => 'ProcessWidgetDynamicField',
                                 Data => {
-                                    $Field->{Name} => $Field->{Title},
-                                    %Ticket,
-
-                                    # alias for ticket title, Title will be overwritten
-                                    TicketTitle => $Ticket{Title},
-                                    Value       => $Field->{Value},
-                                    Title       => $Field->{Title},
-                                    Link        => $Field->{Link},
-                                    LinkPreview => $Field->{LinkPreview},
-
-                                    # Include unique parameter with dynamic field name in case of collision with others.
-                                    #   Please see bug#13362 for more information.
-                                    "DynamicField_$Field->{Name}" => $Field->{Title},
+                                    Label => $Field->{Label},
+                                    Name  => $Field->{Name},
                                 },
                             );
-                        }
-                        else {
+
                             $LayoutObject->Block(
-                                Name => 'ProcessWidgetDynamicFieldPlain',
-                                Data => {
-                                    Value => $Field->{Value},
-                                    Title => $Field->{Title},
-                                },
+                                Name => 'ProcessWidgetDynamicFieldValueOverlayTrigger',
                             );
+
+                            if ( $Field->{Link} ) {
+                                $LayoutObject->Block(
+                                    Name => 'ProcessWidgetDynamicFieldLink',
+                                    Data => {
+                                        $Field->{Name} => $Field->{Title},
+                                        %Ticket,
+
+                                        # alias for ticket title, Title will be overwritten
+                                        TicketTitle => $Ticket{Title},
+                                        Value       => $Field->{Value},
+                                        Title       => $Field->{Title},
+                                        Link        => $Field->{Link},
+                                        LinkPreview => $Field->{LinkPreview},
+
+                                        # Include unique parameter with dynamic field name in case of collision with others.
+                                        #   Please see bug#13362 for more information.
+                                        "DynamicField_$Field->{Name}" => $Field->{Title},
+                                    },
+                                );
+                            }
+                            else {
+                                $LayoutObject->Block(
+                                    Name => 'ProcessWidgetDynamicFieldPlain',
+                                    Data => {
+                                        Value => $Field->{Value},
+                                        # Value => $mine_setor,
+                                        Title => $Field->{Title},
+                                    },
+                                );
+                            }
                         }
                         push @FieldsInAGroup, $Field->{Name};
                     }
                 }
 
                 if ($ShowGroupTitle) {
+                    if ($GroupName =~ /\Q$mine_setor\E/){
+                        $GroupName =~ s/\Q$mine_setor\E //;
+                    }
                     $LayoutObject->Block(
                         Name => 'ProcessWidgetDynamicFieldGroupSeparator',
                         Data => {
