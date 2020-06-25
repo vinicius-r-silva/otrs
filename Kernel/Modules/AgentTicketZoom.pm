@@ -1721,14 +1721,12 @@ sub MaskAgentZoom {
 
     #verifica se o primeiro grupo ta correto
     my $mine_default_firstG = "000 - nao mexer - vars";
-    # if ( grep { $_ eq $mine_firstG } $mine_default_firstG ) {
     if ($mine_firstG =~ /\Q$mine_default_firstG\E/){
         #Pega o campo dinamico do grupo:
         my $mine_firstF = $Self->{DisplaySettings}->{ProcessWidgetDynamicFieldGroups}->{$mine_firstG};
         $mine_firstF =~ s{\s}{}xmsg; 
 
         for my $mine_Field (@FieldsWidget) {
-            # $mine_setor .= $mine_Field->{Label};
             if ( grep { $_ eq $mine_Field->{Label} } $mine_firstF ) {
                 $mine_setor = $mine_Field->{Value};
             }
@@ -1759,7 +1757,6 @@ sub MaskAgentZoom {
 
                     if ( grep { $_ eq $Field->{Name} } @GroupFields ) {
                         if ($GroupName =~ /\Q$mine_setor\E/){
-                        # if(grep { $_ eq $GroupName } $mine_setor){
 
                             $ShowGroupTitle = 1;
                             $LayoutObject->Block(
@@ -1799,7 +1796,6 @@ sub MaskAgentZoom {
                                     Name => 'ProcessWidgetDynamicFieldPlain',
                                     Data => {
                                         Value => $Field->{Value},
-                                        # Value => $mine_setor,
                                         Title => $Field->{Title},
                                     },
                                 );
